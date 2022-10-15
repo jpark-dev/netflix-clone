@@ -40,16 +40,18 @@ const Slider = styled.div`
 
 const SliderRow = styled(motion.div)`
   display: grid;
-  gap: 10px;
+  gap: 5px;
   grid-template-columns: repeat(6, 1fr);
   position: absolute;
   width: 100%;
 `;
-const SliderBox = styled(motion.div)`
+const SliderBox = styled(motion.div)<{ bgImg: string }>`
   background-color: white;
   height: 200px;
-  color: red;
   font-size: 64px;
+  background-image: url(${(props) => props.bgImg});
+  background-size: cover;
+  background-position: center center;
 `;
 
 const Loader = styled.div`
@@ -62,15 +64,17 @@ const Loader = styled.div`
 
 const sliderRowVariants = {
   hidden: {
-    x: window.outerWidth,
+    x: window.outerWidth - 150,
   },
   active: {
     x: 0,
   },
   exit: {
-    x: -window.outerWidth,
+    x: -window.outerWidth + 150,
   },
 };
+
+const pageOffset = 6;
 
 function Home() {
   const { data, isLoading } = useQuery<MoviesResult>(
@@ -80,9 +84,13 @@ function Home() {
   const [movieIndex, setMovieIndex] = useState(0);
   const [isSliderMoving, setisSliderMoving] = useState(false);
   const increaseMovieIndex = () => {
-    if (isSliderMoving) return;
-    setisSliderMoving(true);
-    setMovieIndex((prev) => prev + 1);
+    if (data) {
+      if (isSliderMoving) return;
+      setisSliderMoving(true);
+      const totalMovies = data.results.length - 1;
+      const maxPageIndex = Math.floor(totalMovies / pageOffset) - 1;
+      setMovieIndex((prev) => (prev === maxPageIndex ? 0 : prev + 1));
+    }
   };
   const toggleSliderState = () => setisSliderMoving((prev) => !prev);
 
@@ -100,7 +108,7 @@ function Home() {
             <Overview>{data?.results[0].overview}</Overview>
           </Banner>
           <Slider>
-            <AnimatePresence onExitComplete={toggleSliderState}>
+            <AnimatePresence initial={false} onExitComplete={toggleSliderState}>
               <SliderRow
                 key={movieIndex}
                 variants={sliderRowVariants}
@@ -109,9 +117,18 @@ function Home() {
                 exit="exit"
                 transition={{ type: "tween", duration: 0.5 }}
               >
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <SliderBox key={i}>{i}</SliderBox>
-                ))}
+                {data?.results
+                  .slice(1)
+                  .slice(
+                    pageOffset * movieIndex,
+                    pageOffset * movieIndex + pageOffset
+                  )
+                  .map((movie) => (
+                    <SliderBox
+                      bgImg={makeImgPath(movie.backdrop_path, "w500")}
+                      key={movie.id}
+                    ></SliderBox>
+                  ))}
               </SliderRow>
             </AnimatePresence>
           </Slider>

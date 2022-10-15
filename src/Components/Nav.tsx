@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Link, useMatch } from "react-router-dom";
 import styled from "styled-components";
 
@@ -61,7 +62,7 @@ const Item = styled.li`
   }
 `;
 
-const Circle = styled.span`
+const Circle = styled(motion.span)`
   position: absolute;
   width: 5px;
   height: 5px;
@@ -73,7 +74,16 @@ const Circle = styled.span`
   background-color: ${(props) => props.theme.red};
 `;
 
+const SearchBar = styled(motion.input)`
+  position: absolute;
+  transform-origin: right center;
+  left: -150px;
+`;
+
 const Search = styled.span`
+  position: relative;
+  display: flex;
+  align-items: center;
   color: white;
   svg {
     height: 25px;
@@ -81,9 +91,12 @@ const Search = styled.span`
 `;
 
 function Header() {
-  const homeMatch = useMatch("/")
-  const tvMatch = useMatch("tv")
-  console.log(homeMatch, tvMatch);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const homeMatch = useMatch("/");
+  const tvMatch = useMatch("tv");
+  const toggleSearch = () => {
+    setSearchOpen((prev) => !prev);
+  };
   return (
     <Nav>
       <Col>
@@ -101,19 +114,22 @@ function Header() {
         <Items>
           <Item>
             <Link to="/">
-              Home {homeMatch && <Circle />}
+              Home {homeMatch && <Circle layoutId="currentPathIcon" />}
             </Link>
           </Item>
           <Item>
             <Link to="tv">
-              Tv Shows {tvMatch && <Circle />}
+              Tv Shows {tvMatch && <Circle layoutId="currentPathIcon" />}
             </Link>
           </Item>
         </Items>
       </Col>
       <Col>
         <Search>
-          <svg
+          <motion.svg
+            onClick={toggleSearch}
+            animate={{ x: searchOpen ? -180 : 0 }}
+            transition={{ type: "linear" }}
             fill="currentColor"
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
@@ -123,7 +139,12 @@ function Header() {
               d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
               clipRule="evenodd"
             ></path>
-          </svg>
+          </motion.svg>
+          <SearchBar
+            animate={{ scaleX: searchOpen ? 1 : 0 }}
+            transition={{ type: "linear" }}
+            placeholder="Search for tv show"
+          />
         </Search>
       </Col>
     </Nav>

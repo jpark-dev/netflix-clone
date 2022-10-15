@@ -78,7 +78,13 @@ function Home() {
     getMovies
   );
   const [movieIndex, setMovieIndex] = useState(0);
-  const increaseMovieIndex = () => setMovieIndex((prev) => prev + 1);
+  const [isSliderMoving, setisSliderMoving] = useState(false);
+  const increaseMovieIndex = () => {
+    if (isSliderMoving) return;
+    setisSliderMoving(true);
+    setMovieIndex((prev) => prev + 1);
+  };
+  const toggleSliderState = () => setisSliderMoving((prev) => !prev);
 
   return (
     <Wrapper>
@@ -94,7 +100,7 @@ function Home() {
             <Overview>{data?.results[0].overview}</Overview>
           </Banner>
           <Slider>
-            <AnimatePresence>
+            <AnimatePresence onExitComplete={toggleSliderState}>
               <SliderRow
                 key={movieIndex}
                 variants={sliderRowVariants}

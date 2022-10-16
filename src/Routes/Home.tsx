@@ -11,14 +11,14 @@ const Wrapper = styled.div`
   overflow-x: hidden;
 `;
 
-const Banner = styled.div<{ bgImg: string }>`
+const Banner = styled.div<{ img: string }>`
   height: 120vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 60px;
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 1)),
-    url(${(props) => props.bgImg});
+    url(${(props) => props.img});
   background-size: cover;
 `;
 
@@ -46,11 +46,11 @@ const SliderRow = styled(motion.div)`
   position: absolute;
   width: 100%;
 `;
-const SliderBox = styled(motion.div)<{ bgImg: string }>`
+const SliderBox = styled(motion.div)<{ img: string }>`
   background-color: white;
   height: 200px;
   font-size: 64px;
-  background-image: url(${(props) => props.bgImg});
+  background-image: url(${(props) => props.img});
   background-size: cover;
   background-position: center center;
   &:first-child {
@@ -104,6 +104,41 @@ const Overlay = styled(motion.div)`
   opacity: 0;
 `;
 
+const MovieDetail = styled(motion.div)`
+  position: absolute;
+  width: 40vw;
+  height: 80vh;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: ${(props) => props.theme.black.lighter};
+`;
+
+const MovieDetailImg = styled.div`
+  width: 100%;
+  height: 400px;
+  background-size: cover;
+  background-position: center center;
+`;
+
+const MovieDetailTitle = styled(motion.div)`
+  color: ${(props) => props.theme.white.lighter};
+  font-size: 50px;
+  position: relative;
+  padding: 20px;
+  top: -80px;
+`;
+
+const MovieDetailOverview = styled(motion.div)`
+  color: ${(props) => props.theme.white.lighter};
+  font-size: 20px;
+  position: relative;
+  padding: 20px;
+  top: -90px;
+`;
+
 const sliderBoxVariants = {
   initial: {
     scale: 1,
@@ -151,7 +186,12 @@ function Home() {
   const handleOverlayClick = () => {
     navigate("/");
   };
-
+  const focusedMovie =
+    movieMatch?.params.movieId &&
+    data?.results.find(
+      (movie) => String(movie.id) === movieMatch?.params.movieId
+    );
+  console.log(focusedMovie);
   return (
     <Wrapper>
       {isLoading ? (
@@ -160,7 +200,7 @@ function Home() {
         <>
           <Banner
             onClick={increaseMovieIndex}
-            bgImg={makeImgPath(data?.results[0].backdrop_path || "")}
+            img={makeImgPath(data?.results[0].backdrop_path || "")}
           >
             <Title>{data?.results[0].title}</Title>
             <Overview>{data?.results[0].overview}</Overview>
@@ -187,7 +227,7 @@ function Home() {
                       initial="initial"
                       whileHover="hover"
                       transition={{ type: "tween" }}
-                      bgImg={makeImgPath(movie.backdrop_path, "w500")}
+                      img={makeImgPath(movie.backdrop_path, "w500")}
                       key={movie.id}
                       onClick={() => handleBoxClick(movie.id)}
                       layoutId={movie.id + ""}
@@ -208,19 +248,27 @@ function Home() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                 />
-                <motion.div
+                <MovieDetail
+                  style={{ top: scrollY.get() + 100 }}
                   layoutId={movieMatch.params.movieId}
-                  style={{
-                    position: "absolute",
-                    width: "40vw",
-                    height: "80vh",
-                    backgroundColor: "white",
-                    top: scrollY.get() + 100,
-                    left: 0,
-                    right: 0,
-                    margin: "0 auto",
-                  }}
-                />
+                >
+                  {focusedMovie && (
+                    <>
+                      <MovieDetailImg
+                        style={{
+                          backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImgPath(
+                            focusedMovie.backdrop_path,
+                            "w500"
+                          )})`,
+                        }}
+                      />
+                      <MovieDetailTitle>{focusedMovie.title}</MovieDetailTitle>
+                      <MovieDetailOverview>
+                        {focusedMovie.overview}
+                      </MovieDetailOverview>
+                    </>
+                  )}
+                </MovieDetail>
               </>
             ) : null}
           </AnimatePresence>

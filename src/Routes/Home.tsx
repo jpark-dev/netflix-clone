@@ -52,6 +52,12 @@ const SliderBox = styled(motion.div)<{ bgImg: string }>`
   background-image: url(${(props) => props.bgImg});
   background-size: cover;
   background-position: center center;
+  &:first-child {
+    transform-origin: center left;
+  }
+  &:last-child {
+    transform-origin: center right;
+  }
 `;
 
 const Loader = styled.div`
@@ -71,6 +77,17 @@ const sliderRowVariants = {
   },
   exit: {
     x: -window.outerWidth + 150,
+  },
+};
+
+const sliderBoxVariants = {
+  initial: {
+    scale: 1,
+  },
+  hover: {
+    scale: 1.2,
+    y: -50,
+    transition: { delay: 0.3, type: "tween", duration: 0.3 },
   },
 };
 
@@ -125,6 +142,10 @@ function Home() {
                   )
                   .map((movie) => (
                     <SliderBox
+                      variants={sliderBoxVariants}
+                      initial="initial"
+                      whileHover="hover"
+                      transition={{ type: "tween" }}
                       bgImg={makeImgPath(movie.backdrop_path, "w500")}
                       key={movie.id}
                     ></SliderBox>

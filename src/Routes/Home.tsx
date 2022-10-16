@@ -2,8 +2,9 @@ import { useQuery } from "react-query";
 import styled from "styled-components";
 import { getMovies, MoviesResult } from "../api";
 import { makeImgPath } from "../lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useScroll } from "framer-motion";
 import { useState } from "react";
+import { useNavigate, useMatch } from "react-router-dom";
 
 const Wrapper = styled.div`
   background: black;
@@ -11,7 +12,7 @@ const Wrapper = styled.div`
 `;
 
 const Banner = styled.div<{ bgImg: string }>`
-  height: 100vh;
+  height: 120vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -58,6 +59,7 @@ const SliderBox = styled(motion.div)<{ bgImg: string }>`
   &:last-child {
     transform-origin: center right;
   }
+  cursor: pointer;
 `;
 
 const Loader = styled.div`
@@ -93,6 +95,14 @@ const MovieBoxInfo = styled(motion.div)`
     font-size: 18px;
   }
 `;
+const Overlay = styled(motion.div)`
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+`;
 
 const sliderBoxVariants = {
   initial: {
@@ -115,12 +125,16 @@ const movieInfoVariants = {
 const pageOffset = 6;
 
 function Home() {
+  const navigate = useNavigate();
+  const movieMatch = useMatch("/movies/:movieId");
   const { data, isLoading } = useQuery<MoviesResult>(
     ["movies", "nowPlaying"],
     getMovies
   );
+  const { scrollY } = useScroll();
   const [movieIndex, setMovieIndex] = useState(0);
   const [isSliderMoving, setisSliderMoving] = useState(false);
+
   const increaseMovieIndex = () => {
     if (data) {
       if (isSliderMoving) return;
@@ -131,6 +145,12 @@ function Home() {
     }
   };
   const toggleSliderState = () => setisSliderMoving((prev) => !prev);
+  const handleBoxClick = (movieId: number) => {
+    navigate(`/movies/${movieId}`);
+  };
+  const handleOverlayClick = () => {
+    navigate("/");
+  };
 
   return (
     <Wrapper>
@@ -169,6 +189,8 @@ function Home() {
                       transition={{ type: "tween" }}
                       bgImg={makeImgPath(movie.backdrop_path, "w500")}
                       key={movie.id}
+                      onClick={() => handleBoxClick(movie.id)}
+                      layoutId={movie.id + ""}
                     >
                       <MovieBoxInfo variants={movieInfoVariants}>
                         <h4>{movie.title}</h4>
@@ -178,6 +200,30 @@ function Home() {
               </SliderRow>
             </AnimatePresence>
           </Slider>
+          <AnimatePresence>
+            {movieMatch ? (
+              <>
+                <Overlay
+                  onClick={handleOverlayClick}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+                <motion.div
+                  layoutId={movieMatch.params.movieId}
+                  style={{
+                    position: "absolute",
+                    width: "40vw",
+                    height: "80vh",
+                    backgroundColor: "white",
+                    top: scrollY.get() + 100,
+                    left: 0,
+                    right: 0,
+                    margin: "0 auto",
+                  }}
+                />
+              </>
+            ) : null}
+          </AnimatePresence>
         </>
       )}
     </Wrapper>

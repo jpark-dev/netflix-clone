@@ -80,6 +80,20 @@ const sliderRowVariants = {
   },
 };
 
+const MovieBoxInfo = styled(motion.div)`
+  color: white;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  padding: 10px;
+  opacity: 0;
+  background-color: ${(props) => props.theme.black.lighter};
+  h4 {
+    text-align: center;
+    font-size: 18px;
+  }
+`;
+
 const sliderBoxVariants = {
   initial: {
     scale: 1,
@@ -87,6 +101,13 @@ const sliderBoxVariants = {
   hover: {
     scale: 1.2,
     y: -50,
+    transition: { delay: 0.3, type: "tween", duration: 0.3 },
+  },
+};
+
+const movieInfoVariants = {
+  hover: {
+    opacity: 1,
     transition: { delay: 0.3, type: "tween", duration: 0.3 },
   },
 };
@@ -148,7 +169,11 @@ function Home() {
                       transition={{ type: "tween" }}
                       bgImg={makeImgPath(movie.backdrop_path, "w500")}
                       key={movie.id}
-                    ></SliderBox>
+                    >
+                      <MovieBoxInfo variants={movieInfoVariants}>
+                        <h4>{movie.title}</h4>
+                      </MovieBoxInfo>
+                    </SliderBox>
                   ))}
               </SliderRow>
             </AnimatePresence>

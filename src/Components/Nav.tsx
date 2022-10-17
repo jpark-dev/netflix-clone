@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useMatch } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import { motion, useAnimation, useScroll } from "framer-motion";
 import styled from "styled-components";
+import { useForm } from "react-hook-form";
+
+interface KeywordForm {
+  keyword: string;
+}
 
 const NavWrapper = styled(motion.nav)`
   display: flex;
@@ -86,7 +91,7 @@ const SearchBar = styled(motion.input)`
   border: 1px solid ${(props) => props.theme.white.lighter};
 `;
 
-const Search = styled.span`
+const Search = styled.form`
   position: relative;
   display: flex;
   align-items: center;
@@ -107,6 +112,7 @@ const navVariant = {
 
 function Nav() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const navigate = useNavigate();
   const homeMatch = useMatch("/");
   const tvMatch = useMatch("tv");
   const searchAnimation = useAnimation();
@@ -128,6 +134,11 @@ function Nav() {
       navAnimation.start(scrollY.get() > 80 ? "scroll" : "top");
     });
   }, [scrollY, navAnimation]);
+
+  const { register, handleSubmit } = useForm<KeywordForm>();
+  const onValid = (data: KeywordForm) => {
+    navigate(`/search?keyword=${data.keyword}`);
+  };
 
   return (
     <NavWrapper variants={navVariant} animate={navAnimation} initial="top">
@@ -157,7 +168,7 @@ function Nav() {
         </Items>
       </Col>
       <Col>
-        <Search>
+        <Search onSubmit={handleSubmit(onValid)}>
           <motion.svg
             onClick={toggleSearch}
             animate={{ x: searchOpen ? -180 : 0 }}
@@ -173,6 +184,10 @@ function Nav() {
             ></path>
           </motion.svg>
           <SearchBar
+            {...register("keyword", {
+              required: "This is required. ",
+              minLength: 2,
+            })}
             initial={{ scaleX: 0 }}
             animate={searchAnimation}
             transition={{ type: "linear" }}

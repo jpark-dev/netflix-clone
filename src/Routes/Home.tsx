@@ -191,7 +191,7 @@ function Home() {
     data?.results.find(
       (movie) => String(movie.id) === movieMatch?.params.movieId
     );
-  console.log(focusedMovie);
+
   return (
     <Wrapper>
       {isLoading ? (
